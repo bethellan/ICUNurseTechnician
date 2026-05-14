@@ -1,0 +1,6 @@
+{
+  "appVersion": "v36",
+  "updatedAt": "2026-05-14",
+  "label": "Introduction button fix",
+  "notes": "Fixes introduction header photo/icon display and makes the introduction button work reliably with photo-only setups; protected backup schema unchanged."
+}

@@ -1,165 +1,221 @@
-<!doctype html>
+<!--
+Copyright © Andrew Bethell. All rights reserved.
+Created by Andrew Bethell in his own time for his father following a stroke.
+-->
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>ICU Technician Knowledge</title>
-  <link rel="stylesheet" href="styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyNewVoice - Communication Tool</title>
+    <meta name="theme-color" content="#4CAF50">
+    <link rel="preload" href="style.css" as="style">
+    <link rel="preload" href="script.js" as="script">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header class="app-header">
-    <div>
-      <h1>ICU Technician Knowledge</h1>
-      <p class="subtitle">Structured notes, workflows, equipment references and open questions</p>
-    </div>
-    <div class="header-actions">
-      <button id="btnImport" class="primary">Import JSON</button>
-      <button id="btnExport">Export JSON</button>
-      <button id="btnSeed">Load Sample</button>
-      <input id="fileInput" type="file" accept=".json,application/json" hidden />
-    </div>
-  </header>
+    <!-- Copyright © Andrew Bethell. All rights reserved. Created by Andrew Bethell in his own time for his father following a stroke. -->
+    <div class="container">
+        <!-- Toast Notifications -->
+        <div id="toast" class="toast" aria-live="polite" aria-atomic="true"></div>
+        <!-- Auto-Save Indicator -->
 
-  <main class="layout">
-    <aside class="sidebar">
-      <section class="panel">
-        <h2>Search</h2>
-        <input id="searchInput" class="search" placeholder="Search equipment, people, FPIM codes, REF numbers..." />
-        <div class="filters">
-          <label><input type="checkbox" id="filterConfirmedOnly" /> Confirmed only</label>
-          <label><input type="checkbox" id="filterOpenOnly" /> Open questions only</label>
-        </div>
-      </section>
+	<div id="autosaveIndicator" class="autosave-indicator" aria-live="polite" aria-atomic="true">
+  	💾 Saved
+	</div>
 
-      <section class="panel">
-        <h2>Menus</h2>
-        <nav id="categoryNav" class="category-nav"></nav>
-      </section>
+        <!-- Message Display Bar -->
+        <div id="messageBar" role="status" aria-live="polite">
+            <button id="backToMenu" class="back-to-menu title-back-to-menu" type="button" aria-label="Return to main menu" hidden>←</button>
+            <p id="messageBarText">Select a button to speak...</p>
+        </div>
+        
+        <!-- Loading Indicator -->
+        <div id="loadingIndicator" class="loading-indicator" style="display: none;">
+            <div class="loading-spinner"></div>
+            <p>Loading...</p>
+        </div>
+        
+        <!-- Management Toggle Button -->
+        <button id="managementToggle" class="management-toggle" title="Settings" aria-label="Open settings">
+            ⚙️
+        </button>
+        <!-- Settings is the only main-screen control. About, maintenance, photo/voice setup and content setup are accessed from Settings. -->
 
-      <section class="panel status-panel">
-        <h2>Knowledge File</h2>
-        <dl>
-          <dt>Schema</dt><dd id="schemaVersion">—</dd>
-          <dt>Entries</dt><dd id="entryCount">0</dd>
-          <dt>Last updated</dt><dd id="lastUpdated">—</dd>
-        </dl>
-      </section>
-    </aside>
+        <!-- Tab Navigation -->
+        <nav class="tab-container" role="tablist" aria-label="Communication categories">
+            <button class="tab active" data-category="quick" role="tab" aria-selected="true">Quick Words</button>
+            <button class="tab" data-category="health" role="tab" aria-selected="false">Health</button>
+            <button class="tab" data-category="selfcare" role="tab" aria-selected="false">Self Care</button>
+            <button class="tab" data-category="food" role="tab" aria-selected="false">Food & Drink</button>
+            <button class="tab" data-category="environment" role="tab" aria-selected="false">Comfort</button>
+            <button class="tab" data-category="MyPeople" role="tab" aria-selected="false">My People</button>
+            <button class="tab" data-category="feelings" role="tab" aria-selected="false">Feelings</button>
+            <button class="tab" data-category="routine" role="tab" aria-selected="false">Daily Routine</button>
+            <button class="tab" data-category="social" role="tab" aria-selected="false">Social Chat</button>
+            <button class="tab" data-category="activities" role="tab" aria-selected="false">Activities</button>
+            <button class="tab" data-category="memories" role="tab" aria-selected="false">Memories</button>
+        </nav>
+        
+        <!-- Selected Category Header removed in v8: submenu title and back button now live in the fixed top title bar. -->
+        <div id="submenuHeader" class="submenu-header" hidden></div>
 
-    <section class="content">
-      <section class="dashboard">
-        <div class="dash-card">
-          <span class="dash-number" id="dashConfirmed">0</span>
-          <span class="dash-label">Confirmed</span>
+        <!-- Dynamic Button Grid -->
+        <div class="grid" id="buttonGrid" role="region" aria-label="Communication buttons" hidden>
+            <!-- Buttons will be loaded here by JavaScript -->
         </div>
-        <div class="dash-card">
-          <span class="dash-number" id="dashProvisional">0</span>
-          <span class="dash-label">Provisional</span>
-        </div>
-        <div class="dash-card warning">
-          <span class="dash-number" id="dashOpen">0</span>
-          <span class="dash-label">Open Questions</span>
-        </div>
-        <div class="dash-card danger">
-          <span class="dash-number" id="dashContradictions">0</span>
-          <span class="dash-label">Contradictions</span>
-        </div>
-      </section>
 
-      <section class="quick-capture panel">
-        <div class="section-heading">
-          <h2>Quick Capture</h2>
-          <button id="btnCapturePrompt">Copy ChatGPT extraction prompt</button>
+        <!-- Password Prompt Modal -->
+        <div id="passwordModal" class="modal" role="dialog" aria-labelledby="passwordModalTitle" aria-modal="true">
+            <div class="modal-content">
+                <h3 id="passwordModalTitle">Management Access</h3>
+                <p>Enter password to manage content:</p>
+                <input type="password" id="passwordInput" placeholder="Enter password..." 
+                       class="management-input" aria-required="true">
+                <div class="modal-actions">
+                    <button id="passwordSubmit" class="management-btn">Access</button>
+                    <button id="passwordCancel" class="management-btn close-btn">Cancel</button>
+                </div>
+            </div>
         </div>
-        <textarea id="quickText" placeholder="Technician note: ..."></textarea>
-        <div class="form-row">
-          <select id="quickCategory"></select>
-          <select id="quickStatus">
-            <option>Unprocessed</option>
-            <option>Provisional</option>
-            <option>Confirmed</option>
-            <option>Open Question</option>
-            <option>Contradiction</option>
-          </select>
-          <button id="btnQuickAdd" class="primary">Add note</button>
+
+        <!-- About Modal -->
+        <div id="aboutModal" class="modal" role="dialog" aria-labelledby="aboutModalTitle" aria-modal="true">
+            <div class="modal-content about-content">
+                <h3 id="aboutModalTitle">About MyNewVoice</h3>
+                <p>MyNewVoice was created by Andrew Bethell for his father following a stroke, in the hope of helping him engage with people and the world in a better way.</p>
+                <p><strong>Copyright © Andrew Bethell. All rights reserved.</strong></p>
+                <p class="privacy-note">This public template uses generic placeholders. Keep private names, phone numbers, birthdays, and family photos out of the public GitHub version.</p>
+                <div class="modal-actions">
+                    <button id="aboutClose" class="management-btn close-btn">Close</button>
+                </div>
+            </div>
         </div>
-      </section>
 
-      <section class="panel">
-        <div class="section-heading">
-          <h2 id="viewTitle">All entries</h2>
-          <div>
-            <button id="btnNewEntry">New structured entry</button>
-            <button id="btnValidate">Validate</button>
-          </div>
-        </div>
-        <div id="validationOutput" class="validation-output" hidden></div>
-        <div id="entriesList" class="entries-list"></div>
-      </section>
-    </section>
-  </main>
+        <!-- Content Management Overlay -->
+       <div id="managementOverlay" class="management-overlay">
+  <div id="managementPanel" class="management-panel" role="dialog" aria-labelledby="managementPanelTitle" aria-modal="true">
 
-  <dialog id="entryDialog">
-    <form method="dialog" id="entryForm">
-      <h2 id="entryDialogTitle">New entry</h2>
-      <input type="hidden" id="entryId" />
-      <label>Title <input id="entryTitle" required /></label>
-      <label>Category <select id="entryCategory"></select></label>
-      <label>Subcategory <input id="entrySubcategory" placeholder="e.g. ABL90 FLEX, FPIM, Linet beds" /></label>
-      <label>Status
-        <select id="entryStatus">
-          <option>Confirmed</option>
-          <option>Provisional</option>
-          <option>Unverified</option>
-          <option>Contradiction</option>
-          <option>Open Question</option>
-          <option>Deprecated</option>
-          <option>Archived</option>
-          <option>Unprocessed</option>
-        </select>
-      </label>
-      <label>Importance
-        <select id="entryImportance">
-          <option>Routine</option>
-          <option>Medium</option>
-          <option>High</option>
-          <option>Critical</option>
-        </select>
-      </label>
-      <label>Summary <textarea id="entrySummary"></textarea></label>
-      <label>Body / workflow detail <textarea id="entryBody"></textarea></label>
-      <label>Tags <input id="entryTags" placeholder="comma separated" /></label>
-      <label>People <input id="entryPeople" placeholder="comma separated" /></label>
-      <label>Locations <input id="entryLocations" placeholder="comma separated" /></label>
-      <menu>
-        <button value="cancel">Cancel</button>
-        <button id="btnSaveEntry" value="default" class="primary">Save</button>
-      </menu>
-    </form>
-  </dialog>
-
-  <template id="entryTemplate">
-    <article class="entry-card">
-      <div class="entry-topline">
-        <span class="status-pill"></span>
-        <span class="importance-pill"></span>
+      <h3 id="managementPanelTitle">Content Management</h3>
+      
+      <div class="management-section">
+          <h4>Export/Backup</h4>
+          <button id="exportData" class="management-btn">📥 Export All Data</button>
+          <button id="importData" class="management-btn">📤 Import Data</button>
+          <input type="file" id="importFile" accept=".json" style="display: none;">
+          <p class="help-text">Download a backup of all phrases and people or import from a backup file</p>
       </div>
-      <h3></h3>
-      <p class="entry-meta"></p>
-      <p class="entry-summary"></p>
-      <details>
-        <summary>Details</summary>
-        <div class="entry-body"></div>
-        <div class="entry-tags"></div>
-      </details>
-      <div class="entry-actions">
-        <button class="copy-prompt">Copy ChatGPT update prompt</button>
-        <button class="edit-entry">Edit</button>
-        <button class="delete-entry danger-button">Delete</button>
-      </div>
-    </article>
-  </template>
 
-  <script src="app.js"></script>
+
+            <div class="management-section">
+                <h4>Add New Phrase</h4>
+                <select id="addCategorySelect" class="management-input">
+                    <option value="quick">Quick Words</option>
+                    <option value="health">Health</option>
+                    <option value="selfcare">Self Care</option>
+                    <option value="food">Food & Drink</option>
+                    <option value="environment">Comfort</option>
+                    <option value="feelings">Feelings</option>
+                    <option value="routine">Daily Routine</option>
+                    <option value="social">Social Chat</option>
+                    <option value="activities">Activities</option>
+                    <option value="memories">Memories</option>
+                </select>
+                <input type="text" id="newPhraseText" placeholder="Enter phrase text..." 
+                       class="management-input" maxlength="200">
+                <input type="text" id="newPhraseImage" placeholder="Photo filename, e.g. food01.jpg (optional)" 
+                       class="management-input">
+                <button id="addPhrase" class="management-btn">➕ Add Phrase</button>
+            </div>
+
+            <div class="management-section">
+                <h4>Remove Phrase</h4>
+                <select id="removeCategorySelect" class="management-input">
+                    <option value="quick">Quick Words</option>
+                    <option value="health">Health</option>
+                    <option value="selfcare">Self Care</option>
+                    <option value="food">Food & Drink</option>
+                    <option value="environment">Comfort</option>
+                    <option value="feelings">Feelings</option>
+                    <option value="routine">Daily Routine</option>
+                    <option value="social">Social Chat</option>
+                    <option value="activities">Activities</option>
+                    <option value="memories">Memories</option>
+                </select>
+                <select id="removePhraseSelect" class="management-input">
+                    <!-- Options will be populated by JavaScript -->
+                </select>
+                <button id="removePhrase" class="management-btn remove-btn">🗑️ Remove Selected Phrase</button>
+            </div>
+
+            <div class="management-section">
+                <h4>Edit Existing Phrase</h4>
+                <select id="editCategorySelect" class="management-input">
+                    <option value="quick">Quick Words</option>
+                    <option value="health">Health</option>
+                    <option value="selfcare">Self Care</option>
+                    <option value="food">Food & Drink</option>
+                    <option value="environment">Comfort</option>
+                    <option value="feelings">Feelings</option>
+                    <option value="routine">Daily Routine</option>
+                    <option value="social">Social Chat</option>
+                    <option value="activities">Activities</option>
+                    <option value="memories">Memories</option>
+                </select>
+                <select id="editPhraseSelect" class="management-input">
+                    <!-- Options will be populated by JavaScript -->
+                </select>
+                <input type="text" id="editPhraseText" placeholder="New phrase text..." 
+                       class="management-input" maxlength="200">
+                <input type="text" id="editPhraseImage" placeholder="Photo filename, e.g. food01.jpg (optional)" 
+                       class="management-input">
+                <button id="updatePhrase" class="management-btn">✏️ Update Phrase</button>
+            </div>
+
+            <div class="management-section">
+                <h4>Reorder Phrases</h4>
+                <select id="reorderCategorySelect" class="management-input">
+                    <option value="quick">Quick Words</option>
+                    <option value="health">Health</option>
+                    <option value="selfcare">Self Care</option>
+                    <option value="food">Food & Drink</option>
+                    <option value="environment">Comfort</option>
+                    <option value="feelings">Feelings</option>
+                    <option value="routine">Daily Routine</option>
+                    <option value="social">Social Chat</option>
+                    <option value="activities">Activities</option>
+                    <option value="memories">Memories</option>
+                </select>
+                <div class="reorder-container">
+                    <ul id="phraseList" class="phrase-list" aria-label="Phrases for reordering">
+                        <!-- Phrases will be populated here for reordering -->
+                    </ul>
+                </div>
+                <button id="saveOrder" class="management-btn">💾 Save New Order</button>
+                <p class="help-text">Drag phrases up or down to reorder them</p>
+            </div>
+
+            <div class="management-section">
+                <h4>People Management</h4>
+                <button id="managePeople" class="management-btn">👥 Manage People</button>
+                <p class="help-text">Add, edit, or remove people from My People section</p>
+            </div>
+
+            <div class="management-section">
+                <h4>Quick Actions</h4>
+                <button id="showAllPhrases" class="management-btn">👁️ View All Phrases</button>
+                <button id="reloadApp" class="management-btn">🔄 Reload App</button>
+                <button id="resetData" class="management-btn remove-btn">🔄 Reset to Default Data</button>
+            </div>
+
+              <button id="closeManagement" class="management-btn close-btn">❌ Close Management</button>
+  </div>
+</div>
+    
+    <script src="script.js" defer></script>
+
+
 </body>
 </html>

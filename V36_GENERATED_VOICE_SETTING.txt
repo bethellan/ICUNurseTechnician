@@ -1,0 +1,3 @@
+MyNewVoice v36 - Generated voice setting
+
+Adds Settings controls for device/browser generated speech voice, speech speed, and pitch. Recorded voices still take priority. No protected backup schema fields were changed; the settings are saved as optional appSettings fields.
