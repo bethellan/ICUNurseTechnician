@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ICU Technician Knowledge File",
+  "type": "object",
+  "required": [
+    "appVersion",
+    "schemaVersion",
+    "entries"
+  ],
+  "properties": {
+    "appVersion": {
+      "type": "string"
+    },
+    "schemaVersion": {
+      "type": "string"
+    },
+    "owner": {
+      "type": "string"
+    },
+    "created": {
+      "type": "string"
+    },
+    "lastUpdated": {
+      "type": "string"
+    },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "category",
+          "status"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "subcategory": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "Confirmed",
+              "Provisional",
+              "Unverified",
+              "Contradiction",
+              "Open Question",
+              "Deprecated",
+              "Archived",
+              "Unprocessed"
+            ]
+          },
+          "importance": {
+            "enum": [
+              "Routine",
+              "Medium",
+              "High",
+              "Critical"
+            ]
+          },
+          "summary": {
+            "type": "string"
+          },
+          "bodyMarkdown": {
+            "type": "string"
+          },
+          "locations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "people": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "sourceRefs": {
+            "type": "array"
+          },
+          "lastUpdated": {
+            "type": "string"
+          },
+          "changeLog": {
+            "type": "array"
+          }
+        }
+      }
+    }
+  }
+}
