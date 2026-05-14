@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>ICU Technician Knowledge</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div>
+      <h1>ICU Technician Knowledge</h1>
+      <p class="subtitle">Structured notes, workflows, equipment references and open questions</p>
+    </div>
+    <div class="header-actions">
+      <button id="btnImport" class="primary">Import JSON</button>
+      <button id="btnExport">Export JSON</button>
+      <button id="btnSeed">Load Sample</button>
+      <input id="fileInput" type="file" accept=".json,application/json" hidden />
+    </div>
+  </header>
+
+  <main class="layout">
+    <aside class="sidebar">
+      <section class="panel">
+        <h2>Search</h2>
+        <input id="searchInput" class="search" placeholder="Search equipment, people, FPIM codes, REF numbers..." />
+        <div class="filters">
+          <label><input type="checkbox" id="filterConfirmedOnly" /> Confirmed only</label>
+          <label><input type="checkbox" id="filterOpenOnly" /> Open questions only</label>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Menus</h2>
+        <nav id="categoryNav" class="category-nav"></nav>
+      </section>
+
+      <section class="panel status-panel">
+        <h2>Knowledge File</h2>
+        <dl>
+          <dt>Schema</dt><dd id="schemaVersion">—</dd>
+          <dt>Entries</dt><dd id="entryCount">0</dd>
+          <dt>Last updated</dt><dd id="lastUpdated">—</dd>
+        </dl>
+      </section>
+    </aside>
+
+    <section class="content">
+      <section class="dashboard">
+        <div class="dash-card">
+          <span class="dash-number" id="dashConfirmed">0</span>
+          <span class="dash-label">Confirmed</span>
+        </div>
+        <div class="dash-card">
+          <span class="dash-number" id="dashProvisional">0</span>
+          <span class="dash-label">Provisional</span>
+        </div>
+        <div class="dash-card warning">
+          <span class="dash-number" id="dashOpen">0</span>
+          <span class="dash-label">Open Questions</span>
+        </div>
+        <div class="dash-card danger">
+          <span class="dash-number" id="dashContradictions">0</span>
+          <span class="dash-label">Contradictions</span>
+        </div>
+      </section>
+
+      <section class="quick-capture panel">
+        <div class="section-heading">
+          <h2>Quick Capture</h2>
+          <button id="btnCapturePrompt">Copy ChatGPT extraction prompt</button>
+        </div>
+        <textarea id="quickText" placeholder="Technician note: ..."></textarea>
+        <div class="form-row">
+          <select id="quickCategory"></select>
+          <select id="quickStatus">
+            <option>Unprocessed</option>
+            <option>Provisional</option>
+            <option>Confirmed</option>
+            <option>Open Question</option>
+            <option>Contradiction</option>
+          </select>
+          <button id="btnQuickAdd" class="primary">Add note</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="section-heading">
+          <h2 id="viewTitle">All entries</h2>
+          <div>
+            <button id="btnNewEntry">New structured entry</button>
+            <button id="btnValidate">Validate</button>
+          </div>
+        </div>
+        <div id="validationOutput" class="validation-output" hidden></div>
+        <div id="entriesList" class="entries-list"></div>
+      </section>
+    </section>
+  </main>
+
+  <dialog id="entryDialog">
+    <form method="dialog" id="entryForm">
+      <h2 id="entryDialogTitle">New entry</h2>
+      <input type="hidden" id="entryId" />
+      <label>Title <input id="entryTitle" required /></label>
+      <label>Category <select id="entryCategory"></select></label>
+      <label>Subcategory <input id="entrySubcategory" placeholder="e.g. ABL90 FLEX, FPIM, Linet beds" /></label>
+      <label>Status
+        <select id="entryStatus">
+          <option>Confirmed</option>
+          <option>Provisional</option>
+          <option>Unverified</option>
+          <option>Contradiction</option>
+          <option>Open Question</option>
+          <option>Deprecated</option>
+          <option>Archived</option>
+          <option>Unprocessed</option>
+        </select>
+      </label>
+      <label>Importance
+        <select id="entryImportance">
+          <option>Routine</option>
+          <option>Medium</option>
+          <option>High</option>
+          <option>Critical</option>
+        </select>
+      </label>
+      <label>Summary <textarea id="entrySummary"></textarea></label>
+      <label>Body / workflow detail <textarea id="entryBody"></textarea></label>
+      <label>Tags <input id="entryTags" placeholder="comma separated" /></label>
+      <label>People <input id="entryPeople" placeholder="comma separated" /></label>
+      <label>Locations <input id="entryLocations" placeholder="comma separated" /></label>
+      <menu>
+        <button value="cancel">Cancel</button>
+        <button id="btnSaveEntry" value="default" class="primary">Save</button>
+      </menu>
+    </form>
+  </dialog>
+
+  <template id="entryTemplate">
+    <article class="entry-card">
+      <div class="entry-topline">
+        <span class="status-pill"></span>
+        <span class="importance-pill"></span>
+      </div>
+      <h3></h3>
+      <p class="entry-meta"></p>
+      <p class="entry-summary"></p>
+      <details>
+        <summary>Details</summary>
+        <div class="entry-body"></div>
+        <div class="entry-tags"></div>
+      </details>
+      <div class="entry-actions">
+        <button class="copy-prompt">Copy ChatGPT update prompt</button>
+        <button class="edit-entry">Edit</button>
+        <button class="delete-entry danger-button">Delete</button>
+      </div>
+    </article>
+  </template>
+
+  <script src="app.js"></script>
+</body>
+</html>
