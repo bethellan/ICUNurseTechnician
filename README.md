@@ -1,6 +1,6 @@
-# ICU Technician Knowledge App
+# ICU Technician Knowledge App v2
 
-A GitHub Pages-ready static web app for managing ICU Nurse Technician knowledge.
+GitHub Pages-ready static web app for managing ICU Nurse Technician knowledge.
 
 ## What it does
 
@@ -11,32 +11,29 @@ A GitHub Pages-ready static web app for managing ICU Nurse Technician knowledge.
 - Tracks statuses: Confirmed, Provisional, Unverified, Contradiction, Open Question, Deprecated, Archived, Unprocessed
 - Includes basic validation
 - Generates ChatGPT prompts for transforming raw notes into structured entries
+- Imports ChatGPT update batches through a merge-review screen
+- Detects likely duplicates and supports Add / Merge / Keep separate / Reject / Contradiction
 
-## First setup
+## v2 merge-review workflow
 
-1. Create a new GitHub repository.
-2. Upload these files to the repository root.
-3. Enable GitHub Pages from repository settings.
-4. Open the published site.
-5. Import `sample-data/empty-technician-knowledge.json` or load the sample from the app.
-6. Export the updated JSON file into iCloud Drive.
+1. Ask ChatGPT to convert a batch of technician notes into JSON entries.
+2. Save or copy that JSON as a file.
+3. In the app, click **Import Update Batch**.
+4. Review each imported entry.
+5. Choose Add, Merge, Keep separate, Reject, or Add as contradiction/open question.
+6. Click **Apply accepted changes**.
+7. Export the updated JSON and save it to iCloud Drive.
 
-## Recommended iCloud folder
+## Privacy model
+
+The app does not send your notes anywhere. All importing, reviewing, editing and exporting is done in the browser.
+
+Recommended model:
 
 ```text
-iCloud Drive/
-└─ ICU Technician Knowledge/
-   ├─ technician-knowledge.json
-   ├─ backups/
-   ├─ exports/
-   └─ attachments/
+GitHub Pages = app/interface only
+iCloud Drive = private technician-knowledge.json file
+ChatGPT = structured note transformer
 ```
 
-## Important privacy note
-
-Do not store patient-identifiable information, private staff information, or internal confidential hospital content in a public GitHub Pages site.
-
-The safest model is:
-- GitHub Pages hosts the app interface.
-- Your actual knowledge JSON lives separately in iCloud Drive.
-- You manually import/export the JSON file.
+Do not commit your live `technician-knowledge.json` file to a public GitHub repository.
